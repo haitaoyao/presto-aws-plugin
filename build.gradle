@@ -1,0 +1,15 @@
+
+apply plugin: 'java'
+apply plugin: 'maven'
+apply plugin: 'idea'
+
+
+dependencies {
+    compile 'com.facebook.presto:presto-spi:0.119'
+}
+
+repositories {
+    maven { url "http://54.223.184.81:8081/nexus/content/repositories/central/" }
+    mavenCentral()
+    mavenLocal()
+}
