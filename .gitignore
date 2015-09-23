@@ -3,3 +3,6 @@ build/
 *.log
 *.class
 .gradle/
+*.iml
+*.ipr
+*.iws
