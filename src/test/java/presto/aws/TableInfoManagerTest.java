@@ -15,8 +15,6 @@ public class TableInfoManagerTest {
     @Test
     public void testGetInstanceMeta() throws Exception{
         TableInfoManager manager = new TableInfoManager();
-        final List<ColumnMetadata> instancesColumns = manager.getInstancesColumns();
-        assertNotNull(instancesColumns);
-        assertFalse(instancesColumns.isEmpty());
+
     }
 }

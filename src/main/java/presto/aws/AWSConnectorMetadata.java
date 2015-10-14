@@ -1,21 +1,38 @@
 package presto.aws;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.facebook.presto.spi.ColumnHandle;
 import com.facebook.presto.spi.ColumnMetadata;
 import com.facebook.presto.spi.ConnectorMetadata;
 import com.facebook.presto.spi.ConnectorSession;
 import com.facebook.presto.spi.ConnectorTableHandle;
 import com.facebook.presto.spi.ConnectorTableMetadata;
+import com.facebook.presto.spi.PrestoException;
 import com.facebook.presto.spi.SchemaTableName;
 import com.facebook.presto.spi.SchemaTablePrefix;
+import com.facebook.presto.spi.StandardErrorCode;
+import com.facebook.presto.spi.type.BigintType;
+import com.facebook.presto.spi.type.DateType;
+import com.facebook.presto.spi.type.Type;
 import com.facebook.presto.spi.type.VarcharType;
 import com.google.common.base.Preconditions;
+import static com.google.common.base.Preconditions.checkNotNull;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import org.apache.commons.io.FileUtils;
 import static presto.aws.Types.checkType;
 
+import java.io.File;
+import java.net.URL;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 
 /**
  * get the meta from AWS
@@ -32,20 +49,60 @@ public class AWSConnectorMetadata implements ConnectorMetadata {
 
     private final String connectorId;
 
-    private static final Map<SchemaTableName, ConnectorTableMetadata> META_REGISTRY = Maps.newHashMap();
+    private final LoadingCache<SchemaTableName, TableMetaHolder> metaCache = CacheBuilder.newBuilder()
+      .build(new CacheLoader<SchemaTableName, TableMetaHolder>() {
+          @Override
+          public TableMetaHolder load(SchemaTableName key) throws Exception {
+              final ConnectorTableMetadata tableMetadata = parseTableMetadata(key);
+              if (tableMetadata == null) {
+                  return null;
+              }
+              return new TableMetaHolder(tableMetadata);
+          }
+      });
 
-    static {
-        final List<ColumnMetadata> instanceColumnMetas = ImmutableList.of(new ColumnMetadata("instance_id", VarcharType.VARCHAR, false),
-          new ColumnMetadata("name", VarcharType.VARCHAR, false));
-        ConnectorTableMetadata ec2Table = new ConnectorTableMetadata(new SchemaTableName(EC2_SCHEMA_NAME, EC2_INSTANCES_TABLE_NAME),
-          instanceColumnMetas);
-        META_REGISTRY.put(ec2Table.getTable(), ec2Table);
+    protected static ConnectorTableMetadata parseTableMetadata(SchemaTableName schemaTableName) {
+        final String configFileName = "presto/aws/" + schemaTableName.getSchemaName() + "/" + schemaTableName.getTableName() + ".json";
+        final URL resource = AWSConnectorMetadata.class.getClassLoader().getResource(configFileName);
+        if (resource == null) {
+            return null;
+        }
+        String content;
+        try {
+            content = FileUtils.readFileToString(new File(resource.toURI()));
+        } catch (Exception e) {
+            throw new IllegalStateException("failed to parse table meta: " + schemaTableName);
+        }
+        JSONArray columns = JSON.parseArray(content);
+        List<ColumnMetadata> columnMetadataList = Lists.newArrayListWithCapacity(columns.size());
+        for (Object col : columns) {
+            JSONObject value = (JSONObject) col;
+            final String columnName = (String) value.get("name");
+            final String comment = (String) value.get("comment");
+            final String type = (String) value.get("type");
+            Type dataType = VarcharType.VARCHAR;
+            if ("integer".equals(type)) {
+                dataType = BigintType.BIGINT;
+            } else if ("datetime".equals(type)) {
+                dataType = DateType.DATE;
+            }
+            ColumnMetadata metadata = new ColumnMetadata(columnName, dataType, false, comment, false);
+            columnMetadataList.add(metadata);
+        }
+        final ConnectorTableMetadata tableMetadata = new ConnectorTableMetadata(schemaTableName, columnMetadataList);
+        return tableMetadata;
+    }
 
-        final List<ColumnMetadata> columnMetadatas = ImmutableList.of(new ColumnMetadata("group_id", VarcharType.VARCHAR, false),
-          new ColumnMetadata("name", VarcharType.VARCHAR, false));
-        ConnectorTableMetadata securityGroupTableMetadata = new ConnectorTableMetadata(
-          new SchemaTableName(EC2_SCHEMA_NAME, EC2_SECURITY_GROUPS_TABLE_NAME), columnMetadatas);
-        META_REGISTRY.put(securityGroupTableMetadata.getTable(), securityGroupTableMetadata);
+    private static class TableMetaHolder {
+        final ConnectorTableMetadata tableMetadata;
+        final Map<String, ColumnMetadata> columnNameIndex = Maps.newHashMap();
+
+        TableMetaHolder(ConnectorTableMetadata tableMetadata) {
+            this.tableMetadata = checkNotNull(tableMetadata);
+            for (ColumnMetadata colMetadata : this.tableMetadata.getColumns()) {
+                this.columnNameIndex.put(colMetadata.getName(), colMetadata);
+            }
+        }
     }
 
     public AWSConnectorMetadata(final String connectorId) {
@@ -68,7 +125,37 @@ public class AWSConnectorMetadata implements ConnectorMetadata {
     @Override
     public ConnectorTableMetadata getTableMetadata(ConnectorSession session, ConnectorTableHandle table) {
         AWSTableHandle tableHandle = checkType(table, AWSTableHandle.class, "not AWSTableHandle");
-        return META_REGISTRY.get(tableHandle.toSchemaTableName());
+        return getTableMetadata(tableHandle);
+    }
+
+    private ConnectorTableMetadata getTableMetadata(AWSTableHandle tableHandle) {
+        final TableMetaHolder tableMetaHolder;
+        try {
+            tableMetaHolder = this.metaCache.get(tableHandle.toSchemaTableName());
+        } catch (ExecutionException e) {
+            throw new PrestoException(StandardErrorCode.INTERNAL_ERROR, "failed to get meta data for table: " + tableHandle, e);
+
+        }
+        if (tableMetaHolder != null) {
+            return tableMetaHolder.tableMetadata;
+        } else {
+            return null;
+        }
+    }
+
+    private ColumnMetadata getColumnMetadata(AWSTableHandle tableHandle, final String columnName) {
+        final TableMetaHolder tableMetaHolder;
+        try {
+            tableMetaHolder = this.metaCache.get(tableHandle.toSchemaTableName());
+        } catch (ExecutionException e) {
+            throw new PrestoException(StandardErrorCode.INTERNAL_ERROR, "failed to get meta data for table: " + tableHandle, e);
+
+        }
+        if (tableMetaHolder != null) {
+            return tableMetaHolder.columnNameIndex.get(columnName);
+        } else {
+            return null;
+        }
     }
 
     @Override
@@ -83,12 +170,12 @@ public class AWSConnectorMetadata implements ConnectorMetadata {
     @Override
     public Map<String, ColumnHandle> getColumnHandles(ConnectorSession session, ConnectorTableHandle tableHandle) {
         AWSTableHandle awsTableHandle = checkType(tableHandle, AWSTableHandle.class, "not aws table handle");
-        final ConnectorTableMetadata connectorTableMetadata = META_REGISTRY.get(awsTableHandle.toSchemaTableName());
-        if(connectorTableMetadata == null){
+        final ConnectorTableMetadata connectorTableMetadata = this.getTableMetadata(awsTableHandle);
+        if (connectorTableMetadata == null) {
             return null;
         }
         Map<String, ColumnHandle> columnHandles = Maps.newHashMap();
-        for(ColumnMetadata metadata : connectorTableMetadata.getColumns()){
+        for (ColumnMetadata metadata : connectorTableMetadata.getColumns()) {
             columnHandles.put(metadata.getName(), new AWSColumnHandle(this.connectorId, metadata));
         }
         return columnHandles;
@@ -97,19 +184,12 @@ public class AWSConnectorMetadata implements ConnectorMetadata {
     @Override
     public ColumnMetadata getColumnMetadata(ConnectorSession session, ConnectorTableHandle tableHandle, ColumnHandle columnHandle) {
         AWSTableHandle awsTableHandle = checkType(tableHandle, AWSTableHandle.class, "not aws table handle");
-        ConnectorTableMetadata tableMetadata = META_REGISTRY.get(awsTableHandle.toSchemaTableName());
-        if(tableMetadata == null){
+        ConnectorTableMetadata tableMetadata = this.getTableMetadata(awsTableHandle);
+        if (tableMetadata == null) {
             return null;
         }
         AWSColumnHandle awsColumnHandle = checkType(columnHandle, AWSColumnHandle.class, "not AWSColumnHandle");
-        ColumnMetadata columnMetadata = null;
-        for(ColumnMetadata cd : tableMetadata.getColumns()){
-            if(cd.getName().equals(awsColumnHandle.getColumnName())){
-                columnMetadata = cd;
-                break;
-            }
-        }
-        return columnMetadata;
+        return this.getColumnMetadata(awsTableHandle, awsColumnHandle.getColumnName());
     }
 
     @Override

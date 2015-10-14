@@ -22,7 +22,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 /**
- * Created on 2015-09-25 下午12:03.
+ * @author haitao.yao
  */
 public class AWSTest {
 

@@ -17,7 +17,7 @@ public class AWSConnectorRecordSetProvider implements ConnectorRecordSetProvider
     @Override
     public RecordSet getRecordSet(ConnectorSession session, ConnectorSplit split, List<? extends ColumnHandle> columns) {
         AWSConnectorSplit awsSplit = checkType(split, AWSConnectorSplit.class, "not AWSConnectorSplit");
-
+        
         return null;
     }
 }
