@@ -12,6 +12,7 @@ import com.facebook.presto.spi.type.VarcharType;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
+import static presto.aws.Types.checkType;
 
 import java.util.List;
 import java.util.Map;
@@ -68,13 +69,6 @@ public class AWSConnectorMetadata implements ConnectorMetadata {
     public ConnectorTableMetadata getTableMetadata(ConnectorSession session, ConnectorTableHandle table) {
         AWSTableHandle tableHandle = checkType(table, AWSTableHandle.class, "not AWSTableHandle");
         return META_REGISTRY.get(tableHandle.toSchemaTableName());
-    }
-
-    public static <T> T checkType(Object value, Class<T> type, String message) {
-        Preconditions.checkNotNull(value);
-        Preconditions.checkNotNull(type);
-        Preconditions.checkArgument(type.isInstance(value), message);
-        return type.cast(value);
     }
 
     @Override

@@ -33,8 +33,7 @@ public class AWSConnector implements Connector {
 
     @Override
     public ConnectorSplitManager getSplitManager() {
-        //TODO AWSConnectorSplitManager
-        return new AWSConnectorSplitManager();
+        return new AWSConnectorSplitManager(this.connectorId, this.awsConnectorConfig);
     }
 
     @Override

@@ -1,0 +1,134 @@
+[
+  {
+    "name" : "instance_id",
+    "comment": "The instance architecture. Valid values: i386 | x86_64"
+  },
+  {
+    "name" : "availability_zone",
+    "comment" : "The Availability Zone of the instance."
+  },
+  {
+    "name" : "dns_name",
+    "comment" : "The public DNS name of the instance."
+  },
+  {
+    "name" : "group_id",
+    "comment" : "The ID of the security group for the instance. EC2-Classic only."
+  },
+  {
+    "name" : "group_name",
+    "comment" : "The name of the security group for the instance. EC2-Classic only."
+  },
+  {
+    "name" : "image_id",
+    "comment": "The ID of the image used to launch the instance."
+  },
+  {
+    "name" : "instance_id",
+    "comment" : "The ID of the instance."
+  },
+  {
+    "name" : "instance_lifecycle",
+    "comment" : "Indicates whether this is a Spot Instance. Valid values: spot"
+  },
+  {
+    "name" : "instance_state_code",
+    "comment" : "The state of the instance. The high byte is an opaque internal value and should be ignored. The low byte is set based on the state represented. Valid values: 0 (pending) | 16 (running) | 32 (shutting-down) | 48 (terminated) | 64 (stopping) | 80 (stopped)",
+    "type" : "integer"
+  },
+  {
+    "name" : "instance_state_name",
+    "comment" : "The state of the instance.Valid values: pending | running | shutting-down | terminated | stopping | stopped"
+  },
+  {
+    "name" : "instance_type",
+    "comment" : "The type of instance (for example, m1.small)."
+  },
+  {
+    "name" : "ip_address",
+    "comment" : "The public IP address of the instance."
+  },
+  {
+    "name" : "kernel_id",
+    "comment" : "The kernel ID."
+  },
+  {
+    "name" : "key_name",
+    "comment" : "The name of the key pair used when the instance was launched."
+  },
+  {
+    "name" : "launch_time",
+    "comment" : "The time when the instance was launched (for example, 2010-08-07T11:54:42.000Z).",
+    "type" : "datetime"
+  },
+  {
+    "name" : "monitoring_state",
+    "comment" : "Indicates whether monitoring is enabled for the instance. Valid values: disabled | enabled"
+  },
+  {
+    "name" : "owner_id",
+    "comment" : "The AWS account ID of the instance owner."
+  },
+  {
+    "name" : "placement_group_name",
+    "comment" : "The name of the placement group for the instance."
+  },
+  {
+    "name" : "platform",
+    "comment" : "The platform. Use windows if you have Windows based instances; otherwise, leave blank. Valid value: windows"
+  },
+  {
+    "name" : "private_dns_name",
+    "comment" : "The private DNS name of the instance."
+  },
+  {
+    "name" : "private_ip_address",
+    "comment" : "The private IP address of the instance."
+  },
+  {
+    "name" : "ramdisk_id",
+    "comment" : "The RAM disk ID."
+  },
+  {
+    "name" : "reason",
+    "comment" : "The reason for the current state of the instance (for example, shows \"User Initiated [date]\" when you stop or terminate the instance). Similar to the state-reason-code filter."
+  },
+  {
+    "name" : "root_device_name",
+    "comment" : "The name of the root device for the instance (for example, /dev/sda1)."
+  },
+  {
+    "name" : "root_device_type",
+    "comment" : "The type of root device that the instance uses.Valid values: ebs | instance-store"
+  },
+  {
+    "name" : "state_reason_code",
+    "comment" : "The reason code for the state change."
+  },
+  {
+    "name" : "stat_reason_message",
+    "comment" : "A message that describes the state change."
+  },
+  {
+    "name" : "subnet_id",
+    "comment" : "The ID of the subnet for the instance."
+  },
+  {
+    "name" : "tenancy",
+    "comment" : "The tenancy of an instance.Valid values: dedicated | default"
+  },
+  {
+    "name" : "virtualization_type",
+    "comment" : "The virtualization type of the instance. Valid values: paravirtual | hvm"
+  },
+  {
+    "name" : "vpc_id",
+    "comment" : "The ID of the VPC that the instance is running in."
+  },
+  {
+    "name" : "hypervisor",
+    "comment" : "The hypervisor type of the instance. Valid values: ovm | xen"
+  }
+]
+
+

@@ -2,6 +2,7 @@ package presto.aws;
 
 import com.facebook.presto.spi.ConnectorSplit;
 import com.facebook.presto.spi.HostAddress;
+import com.facebook.presto.spi.TupleDomain;
 import static com.google.common.base.Preconditions.checkNotNull;
 import com.google.common.collect.ImmutableList;
 
@@ -14,32 +15,34 @@ public class AWSConnectorSplit implements ConnectorSplit {
 
     private final String connectorId;
 
-    private final String schemaName;
-
-    private final String tableName;
+    private final AWSTableHandle awsTableHandle;
 
     private final boolean remoteAccessible;
 
     private final AWSConnectorConfig awsConnectorConfig;
 
-    public AWSConnectorSplit(String connectorId, String schemaName, String tableName, AWSConnectorConfig awsConnectorConfig) {
+    private final TupleDomain tupleDomain;
+
+    public AWSConnectorSplit(String connectorId, AWSTableHandle awsTableHandle,
+                             AWSConnectorConfig awsConnectorConfig,
+                             TupleDomain tupleDomain) {
         this.connectorId = checkNotNull(connectorId);
-        this.schemaName = checkNotNull(schemaName);
-        this.tableName = checkNotNull(tableName);
+        this.awsTableHandle = checkNotNull(awsTableHandle);
         this.awsConnectorConfig = checkNotNull(awsConnectorConfig, "awsConnectorConfig should not be null");
         this.remoteAccessible = true;
+        this.tupleDomain = checkNotNull(tupleDomain, "tupleDomain");
     }
 
     public AWSConnectorConfig getAwsConnectorConfig() {
         return this.awsConnectorConfig;
     }
 
-    public String getTableName() {
-        return tableName;
+    public AWSTableHandle getTableHandle() {
+        return this.awsTableHandle;
     }
 
-    public String getSchemaName() {
-        return schemaName;
+    public AWSTableHandle getAwsTableHandle() {
+        return awsTableHandle;
     }
 
     public String getConnectorId() {

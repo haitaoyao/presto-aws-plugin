@@ -9,9 +9,15 @@ import com.amazonaws.services.ec2.AmazonEC2Client;
 import com.amazonaws.services.ec2.model.DescribeInstancesRequest;
 import com.amazonaws.services.ec2.model.DescribeInstancesResult;
 import com.amazonaws.services.ec2.model.DescribeSecurityGroupsResult;
+import com.amazonaws.services.ec2.model.Filter;
+import com.amazonaws.services.ec2.model.Instance;
 import com.amazonaws.services.ec2.model.Reservation;
 import com.amazonaws.services.ec2.model.SecurityGroup;
 import com.amazonaws.util.json.JSONUtils;
+import com.google.common.collect.ImmutableList;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -44,5 +50,24 @@ public class AWSTest {
         for (SecurityGroup sg : describeSecurityGroupsResult.getSecurityGroups()){
             System.out.println(sg);
         }
+    }
+
+    @Test
+    public void testFilter(){
+        DescribeInstancesRequest request = new DescribeInstancesRequest();
+        final Filter filter = new Filter();
+        filter.withName("private-ip-address").withValues("172.31.8.162");
+        request.withFilters(filter);
+        final DescribeInstancesResult instancesResult = this.client.describeInstances(request);
+        assertNotNull(instancesResult);
+        assertFalse(instancesResult.getReservations().isEmpty());
+        int count = 0;
+        for(Reservation r : instancesResult.getReservations()){
+            for (Instance instance : r.getInstances()){
+                System.out.printf("id: %s, private ip: %s\n", instance.getInstanceId(), instance.getPrivateIpAddress());
+                count ++;
+            }
+        }
+        System.out.println("total count: " + count);
     }
 }
