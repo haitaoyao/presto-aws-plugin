@@ -12,17 +12,33 @@ public class AWSColumnHandle implements ColumnHandle {
     private final String connectorId;
     private final String columnName;
     private final Type columnType;
+    private final String beanFieldName;
 
-    public AWSColumnHandle(String connectorId, String columnName, Type columnType) {
-        this.connectorId = connectorId;
-        this.columnName = columnName;
-        this.columnType = columnType;
-    }
-
-    public AWSColumnHandle(String connectorId, ColumnMetadata metadata){
+    public AWSColumnHandle(String connectorId, ColumnMetadata metadata) {
         this.connectorId = connectorId;
         this.columnName = metadata.getName();
         this.columnType = metadata.getType();
+        this.beanFieldName = this.toBeanFieldName(this.columnName);
+    }
+
+    public static String toBeanFieldName(String tableColumnName) {
+        StringBuilder beanFieldName = new StringBuilder(tableColumnName.length());
+        boolean startUpper = false;
+        for (char c : tableColumnName.toCharArray()) {
+            if (c == '_') {
+                startUpper = true;
+            } else if (startUpper) {
+                beanFieldName.append((char) (c - 32));
+                startUpper = false;
+            } else {
+                beanFieldName.append(c);
+            }
+        }
+        return beanFieldName.toString();
+    }
+
+    public String getBeanFieldName() {
+        return this.beanFieldName;
     }
 
     public Type getColumnType() {

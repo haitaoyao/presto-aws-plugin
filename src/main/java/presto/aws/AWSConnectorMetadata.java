@@ -14,6 +14,7 @@ import com.facebook.presto.spi.SchemaTableName;
 import com.facebook.presto.spi.SchemaTablePrefix;
 import com.facebook.presto.spi.StandardErrorCode;
 import com.facebook.presto.spi.type.BigintType;
+import com.facebook.presto.spi.type.BooleanType;
 import com.facebook.presto.spi.type.DateType;
 import com.facebook.presto.spi.type.Type;
 import com.facebook.presto.spi.type.VarcharType;
@@ -85,6 +86,8 @@ public class AWSConnectorMetadata implements ConnectorMetadata {
                 dataType = BigintType.BIGINT;
             } else if ("datetime".equals(type)) {
                 dataType = DateType.DATE;
+            } else if("boolean".equals(type)){
+                dataType = BooleanType.BOOLEAN;
             }
             ColumnMetadata metadata = new ColumnMetadata(columnName, dataType, false, comment, false);
             columnMetadataList.add(metadata);

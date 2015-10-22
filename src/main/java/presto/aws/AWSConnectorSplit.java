@@ -45,6 +45,10 @@ public class AWSConnectorSplit implements ConnectorSplit {
         return awsTableHandle;
     }
 
+    public TupleDomain getTupleDomain(){
+        return this.tupleDomain;
+    }
+
     public String getConnectorId() {
         return connectorId;
     }
