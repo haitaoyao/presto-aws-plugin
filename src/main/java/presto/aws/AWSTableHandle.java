@@ -2,6 +2,8 @@ package presto.aws;
 
 import com.facebook.presto.spi.ConnectorTableHandle;
 import com.facebook.presto.spi.SchemaTableName;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * @author haitao.yao
@@ -14,20 +16,28 @@ public class AWSTableHandle implements ConnectorTableHandle {
 
     private final String tableName;
 
-    public AWSTableHandle(String connectorId, String schemaName, String tableName) {
+    @JsonCreator
+    public AWSTableHandle(@JsonProperty("connectorId") String connectorId,
+                          @JsonProperty("schemaName")
+                          String schemaName,
+                          @JsonProperty("tableName")
+                          String tableName) {
         this.connectorId = connectorId;
         this.schemaName = schemaName;
         this.tableName = tableName;
     }
 
+    @JsonProperty
     public String getTableName() {
         return tableName;
     }
 
+    @JsonProperty
     public String getSchemaName() {
         return schemaName;
     }
 
+    @JsonProperty
     public String getConnectorId() {
         return connectorId;
     }
@@ -54,7 +64,7 @@ public class AWSTableHandle implements ConnectorTableHandle {
         return result;
     }
 
-    public SchemaTableName toSchemaTableName(){
+    public SchemaTableName toSchemaTableName() {
         return new SchemaTableName(this.schemaName, this.tableName);
     }
 }

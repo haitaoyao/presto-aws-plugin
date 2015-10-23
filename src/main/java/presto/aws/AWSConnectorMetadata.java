@@ -9,7 +9,6 @@ import com.facebook.presto.spi.ConnectorMetadata;
 import com.facebook.presto.spi.ConnectorSession;
 import com.facebook.presto.spi.ConnectorTableHandle;
 import com.facebook.presto.spi.ConnectorTableMetadata;
-import com.facebook.presto.spi.ConnectorViewDefinition;
 import com.facebook.presto.spi.PrestoException;
 import com.facebook.presto.spi.SchemaTableName;
 import com.facebook.presto.spi.SchemaTablePrefix;
@@ -28,13 +27,9 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
 import static presto.aws.Types.checkType;
 
-
-import java.io.File;
 import java.io.InputStream;
-import java.net.URL;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -184,7 +179,7 @@ public class AWSConnectorMetadata implements ConnectorMetadata {
         }
         Map<String, ColumnHandle> columnHandles = Maps.newHashMap();
         for (ColumnMetadata metadata : connectorTableMetadata.getColumns()) {
-            columnHandles.put(metadata.getName(), new AWSColumnHandle(this.connectorId, metadata));
+            columnHandles.put(metadata.getName(), new AWSColumnHandle(this.connectorId, metadata.getName(), metadata.getType()));
         }
         return columnHandles;
     }
@@ -209,7 +204,7 @@ public class AWSConnectorMetadata implements ConnectorMetadata {
         } catch (ExecutionException e) {
 
         }
-        if(tableMetaHolder == null){
+        if (tableMetaHolder == null) {
             return Collections.emptyMap();
         }
         final List<ColumnMetadata> columnMetadatas = Lists.newArrayList(tableMetaHolder.columnNameIndex.values());

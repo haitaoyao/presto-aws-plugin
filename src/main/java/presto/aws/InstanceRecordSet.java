@@ -9,6 +9,7 @@ import com.facebook.presto.spi.RecordSet;
 import com.facebook.presto.spi.StandardErrorCode;
 import com.facebook.presto.spi.type.Type;
 import io.airlift.slice.Slice;
+import io.airlift.slice.Slices;
 
 import java.lang.reflect.Field;
 import java.util.Iterator;
@@ -137,7 +138,8 @@ public class InstanceRecordSet implements RecordSet {
 
         @Override
         public Slice getSlice(int field) {
-            return null;
+            String stringValue = this.getObject(field).toString();
+            return Slices.utf8Slice(stringValue);
         }
 
         @Override

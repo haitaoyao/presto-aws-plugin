@@ -4,28 +4,12 @@
     "comment": "The instance architecture. Valid values: i386 | x86_64"
   },
   {
-    "name" : "availability_zone",
-    "comment" : "The Availability Zone of the instance."
-  },
-  {
-    "name" : "dns_name",
+    "name" : "public_dns_name",
     "comment" : "The public DNS name of the instance."
-  },
-  {
-    "name" : "group_id",
-    "comment" : "The ID of the security group for the instance. EC2-Classic only."
-  },
-  {
-    "name" : "group_name",
-    "comment" : "The name of the security group for the instance. EC2-Classic only."
   },
   {
     "name" : "image_id",
     "comment": "The ID of the image used to launch the instance."
-  },
-  {
-    "name" : "instance_id",
-    "comment" : "The ID of the instance."
   },
   {
     "name" : "instance_lifecycle",

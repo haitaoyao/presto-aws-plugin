@@ -1,8 +1,10 @@
 package presto.aws;
 
+import com.alibaba.fastjson.annotation.JSONCreator;
 import com.facebook.presto.spi.ColumnHandle;
 import com.facebook.presto.spi.ColumnMetadata;
 import com.facebook.presto.spi.type.Type;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * @author haitao.yao
@@ -14,10 +16,17 @@ public class AWSColumnHandle implements ColumnHandle {
     private final Type columnType;
     private final String beanFieldName;
 
-    public AWSColumnHandle(String connectorId, ColumnMetadata metadata) {
+    @JSONCreator
+    public AWSColumnHandle(
+      @JsonProperty("connectorId")
+      String connectorId,
+      @JsonProperty("columnName")
+      String columnName,
+      @JsonProperty("columnType")
+      Type columnType) {
         this.connectorId = connectorId;
-        this.columnName = metadata.getName();
-        this.columnType = metadata.getType();
+        this.columnName = columnName;
+        this.columnType = columnType;
         this.beanFieldName = this.toBeanFieldName(this.columnName);
     }
 
@@ -41,10 +50,12 @@ public class AWSColumnHandle implements ColumnHandle {
         return this.beanFieldName;
     }
 
+    @JsonProperty
     public Type getColumnType() {
         return columnType;
     }
 
+    @JsonProperty
     public String getColumnName() {
         return columnName;
     }
@@ -71,6 +82,7 @@ public class AWSColumnHandle implements ColumnHandle {
         return result;
     }
 
+    @JsonProperty
     public String getConnectorId() {
         return connectorId;
     }

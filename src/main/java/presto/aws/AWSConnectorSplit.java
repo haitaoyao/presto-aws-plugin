@@ -3,6 +3,8 @@ package presto.aws;
 import com.facebook.presto.spi.ConnectorSplit;
 import com.facebook.presto.spi.HostAddress;
 import com.facebook.presto.spi.TupleDomain;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import static com.google.common.base.Preconditions.checkNotNull;
 import com.google.common.collect.ImmutableList;
 
@@ -23,9 +25,16 @@ public class AWSConnectorSplit implements ConnectorSplit {
 
     private final TupleDomain tupleDomain;
 
-    public AWSConnectorSplit(String connectorId, AWSTableHandle awsTableHandle,
-                             AWSConnectorConfig awsConnectorConfig,
-                             TupleDomain tupleDomain) {
+    @JsonCreator
+    public AWSConnectorSplit(
+      @JsonProperty("connectorId")
+      String connectorId,
+      @JsonProperty("awsTableHandle")
+      AWSTableHandle awsTableHandle,
+      @JsonProperty("awsConnectorConfig")
+      AWSConnectorConfig awsConnectorConfig,
+      @JsonProperty("tupleDomain")
+      TupleDomain tupleDomain) {
         this.connectorId = checkNotNull(connectorId);
         this.awsTableHandle = checkNotNull(awsTableHandle);
         this.awsConnectorConfig = checkNotNull(awsConnectorConfig, "awsConnectorConfig should not be null");
@@ -33,22 +42,27 @@ public class AWSConnectorSplit implements ConnectorSplit {
         this.tupleDomain = checkNotNull(tupleDomain, "tupleDomain");
     }
 
+    @JsonProperty
     public AWSConnectorConfig getAwsConnectorConfig() {
         return this.awsConnectorConfig;
     }
 
+    @JsonProperty
     public AWSTableHandle getTableHandle() {
         return this.awsTableHandle;
     }
 
+    @JsonProperty
     public AWSTableHandle getAwsTableHandle() {
         return awsTableHandle;
     }
 
-    public TupleDomain getTupleDomain(){
+    @JsonProperty
+    public TupleDomain getTupleDomain() {
         return this.tupleDomain;
     }
 
+    @JsonProperty
     public String getConnectorId() {
         return connectorId;
     }

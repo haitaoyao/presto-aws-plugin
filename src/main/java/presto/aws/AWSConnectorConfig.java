@@ -1,5 +1,7 @@
 package presto.aws;
 
+import com.alibaba.fastjson.annotation.JSONCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Preconditions;
 
 import java.util.Map;
@@ -15,7 +17,18 @@ public class AWSConnectorConfig {
 
     private String secretAccessKey;
 
-    public AWSConnectorConfig() {
+    @JSONCreator
+    public AWSConnectorConfig(
+      @JsonProperty("region")
+      String region,
+      @JsonProperty("accessKeyId")
+      String accessKeyId,
+      @JsonProperty("secretAccessKey")
+      String secretAccessKey
+    ) {
+        this.region = region;
+        this.accessKeyId = accessKeyId;
+        this.secretAccessKey = secretAccessKey;
     }
 
     public AWSConnectorConfig(Map<String, String> config) {
@@ -25,6 +38,7 @@ public class AWSConnectorConfig {
         this.secretAccessKey = config.get("secret-access-key");
     }
 
+    @JsonProperty
     public String getAccessKeyId() {
         return accessKeyId;
     }
@@ -33,6 +47,7 @@ public class AWSConnectorConfig {
         this.accessKeyId = accessKeyId;
     }
 
+    @JsonProperty
     public String getRegion() {
         return region;
     }
@@ -41,6 +56,7 @@ public class AWSConnectorConfig {
         this.region = region;
     }
 
+    @JsonProperty
     public String getSecretAccessKey() {
         return secretAccessKey;
     }
