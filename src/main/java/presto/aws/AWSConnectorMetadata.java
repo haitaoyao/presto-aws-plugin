@@ -9,6 +9,7 @@ import com.facebook.presto.spi.ConnectorMetadata;
 import com.facebook.presto.spi.ConnectorSession;
 import com.facebook.presto.spi.ConnectorTableHandle;
 import com.facebook.presto.spi.ConnectorTableMetadata;
+import com.facebook.presto.spi.ConnectorViewDefinition;
 import com.facebook.presto.spi.PrestoException;
 import com.facebook.presto.spi.SchemaTableName;
 import com.facebook.presto.spi.SchemaTablePrefix;
@@ -26,11 +27,15 @@ import com.google.common.cache.LoadingCache;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
 import static presto.aws.Types.checkType;
 
+
 import java.io.File;
+import java.io.InputStream;
 import java.net.URL;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
@@ -64,13 +69,13 @@ public class AWSConnectorMetadata implements ConnectorMetadata {
 
     protected static ConnectorTableMetadata parseTableMetadata(SchemaTableName schemaTableName) {
         final String configFileName = "presto/aws/" + schemaTableName.getSchemaName() + "/" + schemaTableName.getTableName() + ".json";
-        final URL resource = AWSConnectorMetadata.class.getClassLoader().getResource(configFileName);
+        final InputStream resource = AWSConnectorMetadata.class.getClassLoader().getResourceAsStream(configFileName);
         if (resource == null) {
             return null;
         }
         String content;
         try {
-            content = FileUtils.readFileToString(new File(resource.toURI()));
+            content = new String(IOUtils.toByteArray(resource));
         } catch (Exception e) {
             throw new IllegalStateException("failed to parse table meta: " + schemaTableName);
         }
@@ -86,7 +91,7 @@ public class AWSConnectorMetadata implements ConnectorMetadata {
                 dataType = BigintType.BIGINT;
             } else if ("datetime".equals(type)) {
                 dataType = DateType.DATE;
-            } else if("boolean".equals(type)){
+            } else if ("boolean".equals(type)) {
                 dataType = BooleanType.BOOLEAN;
             }
             ColumnMetadata metadata = new ColumnMetadata(columnName, dataType, false, comment, false);
@@ -197,6 +202,20 @@ public class AWSConnectorMetadata implements ConnectorMetadata {
 
     @Override
     public Map<SchemaTableName, List<ColumnMetadata>> listTableColumns(ConnectorSession session, SchemaTablePrefix prefix) {
-        return null;
+        final SchemaTableName tableName = new SchemaTableName(prefix.getSchemaName(), prefix.getTableName());
+        TableMetaHolder tableMetaHolder = null;
+        try {
+            tableMetaHolder = this.metaCache.get(tableName);
+        } catch (ExecutionException e) {
+
+        }
+        if(tableMetaHolder == null){
+            return Collections.emptyMap();
+        }
+        final List<ColumnMetadata> columnMetadatas = Lists.newArrayList(tableMetaHolder.columnNameIndex.values());
+        Map<SchemaTableName, List<ColumnMetadata>> result = Maps.newHashMap();
+        result.put(tableName, columnMetadatas);
+        return result;
     }
 }
+

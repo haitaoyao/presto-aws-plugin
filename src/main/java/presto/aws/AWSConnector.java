@@ -38,6 +38,6 @@ public class AWSConnector implements Connector {
 
     @Override
     public ConnectorRecordSetProvider getRecordSetProvider() {
-        return null;
+        return new AWSConnectorRecordSetProvider();
     }
 }
