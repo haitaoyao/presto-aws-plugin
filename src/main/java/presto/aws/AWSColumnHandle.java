@@ -27,7 +27,7 @@ public class AWSColumnHandle implements ColumnHandle {
         this.connectorId = connectorId;
         this.columnName = columnName;
         this.columnType = columnType;
-        this.beanFieldName = this.toBeanFieldName(this.columnName);
+        this.beanFieldName = toBeanFieldName(this.columnName);
     }
 
     public static String toBeanFieldName(String tableColumnName) {

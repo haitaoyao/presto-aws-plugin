@@ -7,11 +7,14 @@ import com.facebook.presto.spi.PrestoException;
 import com.facebook.presto.spi.RecordCursor;
 import com.facebook.presto.spi.RecordSet;
 import com.facebook.presto.spi.StandardErrorCode;
+import com.facebook.presto.spi.type.BigintType;
+import com.facebook.presto.spi.type.DateType;
 import com.facebook.presto.spi.type.Type;
 import io.airlift.slice.Slice;
 import io.airlift.slice.Slices;
 
 import java.lang.reflect.Field;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -116,13 +119,24 @@ public class InstanceRecordSet implements RecordSet {
 
         @Override
         public long getLong(int field) {
-            return doGetValue(field, (f) -> {
-                try {
-                    return f.getLong(this.currentInstance);
-                } catch (IllegalAccessException e) {
-                    throw new PrestoException(StandardErrorCode.INTERNAL_ERROR, "failed to get instance field value: " + field);
-                }
-            });
+            final AWSColumnHandle awsColumnHandle = columnHandles.get(field);
+            if (awsColumnHandle.getColumnType().equals(DateType.DATE)) {
+                return doGetValue(field, (f) -> {
+                    try {
+                        return ((Date) f.get(this.currentInstance)).getTime() / 1000L;
+                    } catch (IllegalAccessException e) {
+                        throw new PrestoException(StandardErrorCode.INTERNAL_ERROR, "failed to get instance field value: " + field);
+                    }
+                });
+            } else {
+                return doGetValue(field, (f) -> {
+                    try {
+                        return f.getLong(this.currentInstance);
+                    } catch (IllegalAccessException e) {
+                        throw new PrestoException(StandardErrorCode.INTERNAL_ERROR, "failed to get instance field value: " + field);
+                    }
+                });
+            }
         }
 
         @Override
