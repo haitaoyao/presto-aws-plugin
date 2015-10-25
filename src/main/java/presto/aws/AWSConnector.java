@@ -3,6 +3,7 @@ package presto.aws;
 import com.facebook.presto.spi.Connector;
 import com.facebook.presto.spi.ConnectorHandleResolver;
 import com.facebook.presto.spi.ConnectorMetadata;
+import com.facebook.presto.spi.ConnectorPageSourceProvider;
 import com.facebook.presto.spi.ConnectorRecordSetProvider;
 import com.facebook.presto.spi.ConnectorSplitManager;
 import com.google.common.base.Preconditions;
@@ -34,6 +35,11 @@ public class AWSConnector implements Connector {
     @Override
     public ConnectorSplitManager getSplitManager() {
         return new AWSConnectorSplitManager(this.connectorId, this.awsConnectorConfig);
+    }
+
+    @Override
+    public ConnectorPageSourceProvider getPageSourceProvider() {
+        return null;
     }
 
     @Override
