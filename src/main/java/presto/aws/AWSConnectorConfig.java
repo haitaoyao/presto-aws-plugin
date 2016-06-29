@@ -1,6 +1,16 @@
 package presto.aws;
 
 import com.alibaba.fastjson.annotation.JSONCreator;
+import com.amazonaws.auth.AWSCredentialsProvider;
+import com.amazonaws.auth.AWSCredentialsProviderChain;
+import com.amazonaws.auth.BasicAWSCredentials;
+import com.amazonaws.auth.EnvironmentVariableCredentialsProvider;
+import com.amazonaws.auth.InstanceProfileCredentialsProvider;
+import com.amazonaws.internal.StaticCredentialsProvider;
+import com.amazonaws.regions.Region;
+import com.amazonaws.regions.Regions;
+import com.amazonaws.services.ec2.AmazonEC2;
+import com.amazonaws.services.ec2.AmazonEC2Client;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Preconditions;
 
@@ -63,5 +73,23 @@ public class AWSConnectorConfig {
 
     public void setSecretAccessKey(String secretAccessKey) {
         this.secretAccessKey = secretAccessKey;
+    }
+    
+    public AmazonEC2 createEC2Client(){
+        AWSCredentialsProvider chain;
+        if (this.getAccessKeyId() != null && this.getSecretAccessKey() != null) {
+            chain = new AWSCredentialsProviderChain(new StaticCredentialsProvider(new BasicAWSCredentials(this.getAccessKeyId(), this.getSecretAccessKey())));
+        } else {
+            chain = new AWSCredentialsProviderChain(new EnvironmentVariableCredentialsProvider(), new InstanceProfileCredentialsProvider());
+        }
+        AmazonEC2 client = new AmazonEC2Client(chain);
+        Region region;
+        if (this.getRegion() != null) {
+            region = Region.getRegion(Regions.fromName(this.getRegion()));
+        } else {
+            region = Regions.getCurrentRegion();
+        }
+        client.setRegion(region);
+        return client;
     }
 }

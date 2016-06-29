@@ -12,12 +12,12 @@ import java.util.Map;
  */
 public class AWSConnectorFactory implements ConnectorFactory {
 
-    private final Map<String, String> optionalCofnig;
+    private final Map<String, String> optionalConfig;
 
     private final TypeManager typeManager;
 
     public AWSConnectorFactory(Map<String, String> optionalConfig, TypeManager typeManager) {
-        this.optionalCofnig = optionalConfig;
+        this.optionalConfig = optionalConfig;
         this.typeManager = typeManager;
     }
 
@@ -29,7 +29,7 @@ public class AWSConnectorFactory implements ConnectorFactory {
     @Override
     public Connector create(String connectorId, Map<String, String> requiredConfig) {
         final Map<String, String> rawConfig = new HashMap<String, String>(requiredConfig);
-        rawConfig.putAll(this.optionalCofnig);
+        rawConfig.putAll(this.optionalConfig);
         final AWSConnectorConfig config = new AWSConnectorConfig(rawConfig);
         return new AWSConnector(connectorId, config);
     }
