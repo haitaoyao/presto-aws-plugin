@@ -7,8 +7,9 @@
     <version>0.1-SNAPSHOT</version>
 
     <name>presto aws plugin</name>
+    <description>A presto plugin to describe your AWS resources with SQL</description>
     <properties>
-        <presto.version>0.123</presto.version>
+        <presto.version>0.147</presto.version>
     </properties>
     <dependencies>
         <dependency>
@@ -68,6 +69,7 @@
             <groupId>org.unitils</groupId>
             <artifactId>unitils-mock</artifactId>
             <version>3.4</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
     <build>
